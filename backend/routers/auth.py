@@ -129,7 +129,11 @@ def get_current_user(request: Request) -> CurrentUser:
         if not row:
             return CurrentUser(None, None)
 
-        creds = _build_credentials_from_row(row)
+        try:
+            creds = _build_credentials_from_row(row)
+        except Exception:
+            return CurrentUser(None, None)
+
         if creds is None:
             return CurrentUser(None, None)
 
@@ -142,6 +146,8 @@ def get_current_user(request: Request) -> CurrentUser:
                 return CurrentUser(None, None)
 
         return CurrentUser(creds, row.email)
+    except Exception:
+        return CurrentUser(None, None)
     finally:
         db.close()
 

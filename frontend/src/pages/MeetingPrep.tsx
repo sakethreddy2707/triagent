@@ -162,13 +162,12 @@ export default function MeetingPrep() {
       )}
 
       {!isLoading && !error && data?.length === 0 && (
-        <div className="text-center py-24">
-          <div className="text-5xl mb-4">🗓️</div>
-          <p className="text-gray-700 text-base font-semibold mb-2">No meetings found for this date range</p>
-          <p className="text-gray-400 text-sm max-w-sm mx-auto leading-relaxed">
-            Click <span className="font-semibold text-indigo-500">Sync Now</span> (top-right) to pull meetings from Google Calendar and generate AI briefs.
-            <br /><br />
-            If you recently cleared the database, sync again to repopulate. You can also adjust the date range above to look further ahead.
+        <div className="flex flex-col items-center justify-center py-14 text-center gap-3">
+          <div className="text-5xl">🗓️</div>
+          <p className="text-gray-700 text-base font-semibold">No meetings found for this date range</p>
+          <p className="text-gray-400 text-sm max-w-xs leading-relaxed">
+            Click <span className="font-semibold text-indigo-500">Sync Now</span> in the top-right to pull
+            meetings from Google Calendar and generate AI briefs. You can also adjust the date range above.
           </p>
         </div>
       )}

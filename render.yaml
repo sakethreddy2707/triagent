@@ -22,7 +22,7 @@ services:
 
   # ── Frontend (React / Vite → static site) ────────────────────────────────────
   - type: web
-    name: triagent-frontend
+    name: triagent
     runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
