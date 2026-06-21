@@ -1,6 +1,44 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { sendChatMessage } from '../api/client'
 import type { ChatMessage } from '../api/client'
+
+function parseInline(text: string): ReactNode[] {
+  const parts: ReactNode[] = []
+  const re = /(\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*)/g
+  let last = 0
+  let match: RegExpExecArray | null
+  while ((match = re.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index))
+    if (match[2]) parts.push(<strong key={match.index}><em>{match[2]}</em></strong>)
+    else if (match[3]) parts.push(<strong key={match.index}>{match[3]}</strong>)
+    else if (match[4]) parts.push(<em key={match.index}>{match[4]}</em>)
+    last = match.index + match[0].length
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return parts
+}
+
+function MarkdownMessage({ content }: { content: string }) {
+  const lines = content.split('\n')
+  const nodes: ReactNode[] = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    if (/^### /.test(line)) {
+      nodes.push(<h3 key={i} className="font-semibold text-sm mt-2 mb-0.5">{parseInline(line.slice(4))}</h3>)
+    } else if (/^## /.test(line)) {
+      nodes.push(<h2 key={i} className="font-bold text-sm mt-2.5 mb-0.5">{parseInline(line.slice(3))}</h2>)
+    } else if (/^# /.test(line)) {
+      nodes.push(<h1 key={i} className="font-bold text-sm mt-2.5 mb-1">{parseInline(line.slice(2))}</h1>)
+    } else if (line.trim() === '') {
+      nodes.push(<div key={i} className="h-2" />)
+    } else {
+      nodes.push(<p key={i} className="leading-relaxed">{parseInline(line)}</p>)
+    }
+  }
+
+  return <div className="space-y-0.5 text-sm">{nodes}</div>
+}
 
 const WELCOME: ChatMessage = {
   role: 'assistant',
@@ -100,13 +138,15 @@ export default function ChatBot() {
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
+                  className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                     msg.role === 'user'
                       ? 'bg-indigo-600 text-white rounded-br-sm'
                       : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                   }`}
                 >
-                  {msg.content}
+                  {msg.role === 'assistant'
+                    ? <MarkdownMessage content={msg.content} />
+                    : msg.content}
                 </div>
               </div>
             ))}

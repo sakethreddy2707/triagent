@@ -36,11 +36,14 @@ function CalendarIcon() {
   )
 }
 
+const JUST_CONNECTED_KEY = 'triagent_just_connected'
+
 function AuthRedirect() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
   useEffect(() => {
     if (params.get('auth') === 'success') {
+      sessionStorage.setItem(JUST_CONNECTED_KEY, '1')
       queryClient.invalidateQueries({ queryKey: ['auth'] })
       navigate('/', { replace: true })
     }
@@ -272,12 +275,104 @@ function ProfileMenu({ email }: { email: string | null }) {
   )
 }
 
+function WelcomeScreen({ email, onDone }: { email: string | null; onDone: () => void }) {
+  const qc = useQueryClient()
+  const [syncing, setSyncing] = useState(false)
+  const [status, setStatus] = useState<string | null>(null)
+
+  async function handleSync() {
+    setSyncing(true)
+    setStatus('Syncing your emails and meetings…')
+    try {
+      const [emailOutcome, meetingOutcome] = await Promise.allSettled([
+        syncTriage(7),
+        syncMeetingPrep(todayISO(), futureDateISO(30)),
+      ])
+      const emailMsg = emailOutcome.status === 'fulfilled'
+        ? `${emailOutcome.value.newly_processed} emails triaged`
+        : 'email sync failed'
+      const meetingMsg = meetingOutcome.status === 'fulfilled'
+        ? `${meetingOutcome.value.new_meetings + meetingOutcome.value.refreshed} meetings prepared`
+        : 'meeting sync failed'
+      setStatus(`Done — ${emailMsg} · ${meetingMsg}`)
+      qc.invalidateQueries({ queryKey: ['triage'] })
+      qc.invalidateQueries({ queryKey: ['meetings'] })
+      setTimeout(onDone, 1500)
+    } catch {
+      setStatus('Sync failed — you can try again from the app.')
+      setTimeout(onDone, 2000)
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center mt-16 text-center gap-6 px-4">
+      <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center text-3xl">
+        🎉
+      </div>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">You're connected!</h1>
+        {email && <p className="text-sm text-gray-500">Signed in as <span className="font-medium text-gray-700">{email}</span></p>}
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-md w-full shadow-sm text-left space-y-4">
+        <p className="text-sm font-semibold text-gray-700">What happens when you sync:</p>
+        <ul className="space-y-3">
+          {[
+            { icon: '📧', text: 'Last 7 days of Gmail are fetched and triaged by AI — priority, summary, and draft replies.' },
+            { icon: '📅', text: 'Upcoming calendar events are pulled and briefed with talking points and action items.' },
+            { icon: '💬', text: 'Your AI assistant gets loaded with context so you can ask questions about your inbox.' },
+          ].map(({ icon, text }) => (
+            <li key={icon} className="flex gap-3 text-sm text-gray-600">
+              <span className="text-lg shrink-0">{icon}</span>
+              <span>{text}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {status && (
+        <p className={`text-sm font-medium ${syncing ? 'text-indigo-600' : 'text-green-600'}`}>
+          {status}
+        </p>
+      )}
+
+      <div className="flex flex-col items-center gap-2 w-full max-w-xs">
+        <button
+          onClick={handleSync}
+          disabled={syncing}
+          className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-sm text-sm"
+        >
+          <svg className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          {syncing ? 'Syncing…' : 'Sync Now to get started'}
+        </button>
+        <button
+          onClick={onDone}
+          disabled={syncing}
+          className="text-sm text-gray-400 hover:text-gray-600 transition-colors py-1"
+        >
+          Skip for now
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function Layout() {
   const { data: auth, isLoading } = useQuery({
     queryKey: ['auth'],
     queryFn: checkAuthStatus,
     retry: false,
   })
+  const [showWelcome, setShowWelcome] = useState(
+    () => sessionStorage.getItem(JUST_CONNECTED_KEY) === '1'
+  )
+
+  function dismissWelcome() {
+    sessionStorage.removeItem(JUST_CONNECTED_KEY)
+    setShowWelcome(false)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -311,7 +406,7 @@ function Layout() {
           </div>
 
           <div className="flex items-center gap-4">
-            {auth?.authenticated && (
+            {auth?.authenticated && !showWelcome && (
               <nav className="flex gap-1">
                 <NavLink
                   to="/"
@@ -333,7 +428,7 @@ function Layout() {
               </nav>
             )}
 
-            {!isLoading && auth?.authenticated && <SyncButton />}
+            {!isLoading && auth?.authenticated && !showWelcome && <SyncButton />}
 
             {!isLoading && (
               auth?.authenticated ? (
@@ -369,6 +464,8 @@ function Layout() {
               Connect Google Account
             </a>
           </div>
+        ) : showWelcome ? (
+          <WelcomeScreen email={auth?.email ?? null} onDone={dismissWelcome} />
         ) : (
           <>
             <Routes>

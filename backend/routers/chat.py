@@ -115,13 +115,14 @@ def chat(
         db.query(EmailTriage)
         .filter(EmailTriage.user_email == current_user.email)
         .order_by(EmailTriage.received_at.desc())
-        .limit(100)
+        .limit(20)
         .all()
     )
     meetings = (
         db.query(MeetingBrief)
         .filter(MeetingBrief.user_email == current_user.email)
         .order_by(MeetingBrief.start_time.asc())
+        .limit(20)
         .all()
     )
 

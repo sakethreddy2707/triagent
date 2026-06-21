@@ -1,6 +1,20 @@
 version: "3.9"
 
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: triagent
+      POSTGRES_USER: triagent
+      POSTGRES_PASSWORD: triagent
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U triagent"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
@@ -9,8 +23,14 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://triagent:triagent@db:5432/triagent
     volumes:
       - /tmp:/tmp
+      - ./backend/client_secret.json:/app/client_secret.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend:
     build:
@@ -22,3 +42,6 @@ services:
       - backend
     environment:
       - VITE_API_URL=http://localhost:8000
+
+volumes:
+  postgres_data:

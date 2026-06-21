@@ -112,7 +112,7 @@ def sync_triage(
         draft_created = False
         if (
             analysis["reply_needed"] == "YES"
-            and analysis["confidence"] >= 90
+            and analysis["confidence"] >= 85
             and analysis["draft_reply"]
         ):
             try:

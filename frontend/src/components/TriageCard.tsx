@@ -82,35 +82,33 @@ export default function TriageCard({ email }: { email: TriageResult }) {
         </span>
       </div>
 
-      {/* Sender */}
-      <p className="text-sm text-gray-500 text-left mb-3">{email.sender}</p>
-
-      {/* Badges */}
-      <div className="flex flex-wrap gap-2 mb-3">
-        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-md ${PRIORITY_STYLES[email.priority]}`}>
-          {email.priority}
-        </span>
-        <span className={`text-xs px-2.5 py-0.5 rounded-md border font-medium ${
-          email.worth_reviewing === 'YES'
-            ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-            : 'bg-gray-50 text-gray-400 border-gray-200'
-        }`}>
-          {email.worth_reviewing === 'YES' ? 'Worth reviewing' : 'Low value'}
-        </span>
-        {email.gmail_draft_created && (
-          <span className="text-xs px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
-            Draft saved to Gmail
-          </span>
-        )}
+      {/* Sender + Badges (left) + Donut (right) */}
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex flex-col gap-1.5 min-w-0">
+          <p className="text-sm text-gray-500 truncate"><span className="font-bold text-gray-700">From:</span> {email.sender}</p>
+          <div className="flex flex-wrap gap-2">
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-md ${PRIORITY_STYLES[email.priority]}`}>
+              {email.priority}
+            </span>
+            <span className={`text-xs px-2.5 py-0.5 rounded-md border font-medium ${
+              email.worth_reviewing === 'YES'
+                ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                : 'bg-gray-50 text-gray-400 border-gray-200'
+            }`}>
+              {email.worth_reviewing === 'YES' ? 'Worth reviewing' : 'Low value'}
+            </span>
+            {email.gmail_draft_created && (
+              <span className="text-xs px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+                Draft saved to Gmail
+              </span>
+            )}
+          </div>
+        </div>
+        <ConfidenceDonut value={email.confidence} />
       </div>
 
       {/* Summary */}
       <p className="text-sm text-gray-700 leading-relaxed text-left mb-4">{email.summary}</p>
-
-      {/* Confidence donut — right aligned, no label on left */}
-      <div className="flex justify-end mb-3">
-        <ConfidenceDonut value={email.confidence} />
-      </div>
 
       {/* Draft reply */}
       {email.reply_needed === 'YES' && email.draft_reply && (
