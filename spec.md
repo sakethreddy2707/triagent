@@ -25,12 +25,12 @@ TriAgent is a two-agent AI productivity web app that connects to your Gmail and 
 | `reply_needed` | `confidence` | Draft shown in UI | Auto-created in Gmail |
 |---|---|---|---|
 | NO | any | No | No |
-| YES | < 90 | Yes | No |
-| YES | ≥ 90 | Yes | Yes (Gmail Drafts API) |
+| YES | < 85 | Yes | No |
+| YES | ≥ 85 | Yes | Yes (Gmail Drafts API) |
 
 - If `reply_needed = NO` — no draft is generated at all (neither in UI nor in Gmail)
-- If `reply_needed = YES` and `confidence < 90` — draft is shown in the UI for the user to review or copy, but nothing is pushed to Gmail
-- If `reply_needed = YES` and `confidence ≥ 90` — draft is shown in the UI AND automatically created as a Gmail draft via the Gmail Drafts API
+- If `reply_needed = YES` and `confidence < 85` — draft is shown in the UI for the user to review or copy, but nothing is pushed to Gmail
+- If `reply_needed = YES` and `confidence ≥ 85` — draft is shown in the UI AND automatically created as a Gmail draft via the Gmail Drafts API
 
 **Structured output per email:**
 ```json
@@ -143,7 +143,7 @@ Gmail API  Calendar API  Anthropic API
 2. FastAPI fetches emails from Gmail API using the stored OAuth token
 3. For each email, calls Claude Haiku 4.5 with email content + structured output schema
 4. Claude returns JSON: `{summary, priority, worth_reviewing, reply_needed, draft_reply, confidence}`
-5. If `reply_needed == "YES"` and `confidence >= 90`, FastAPI calls Gmail Drafts API to create the draft
+5. If `reply_needed == "YES"` and `confidence >= 85`, FastAPI calls Gmail Drafts API to create the draft
 6. Returns full triage results to React UI
 
 ### Flow — Meeting Prep Agent

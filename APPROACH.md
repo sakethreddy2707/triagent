@@ -20,7 +20,7 @@ Email triage and meeting prep are two of the highest-friction tasks in a knowled
 
 **Structured JSON output via prompt** — rather than function calling or tool use, the prompts instruct Claude to return pure JSON with a fixed schema. Simple and reliable for this use case; the backend strips any markdown code fences if Claude wraps the output.
 
-**Gmail draft threshold at ≥90% confidence** — high bar prevents flooding the Drafts folder with low-quality suggestions. Below 90, the draft is shown in the UI only, giving the user control.
+**Gmail draft threshold at ≥85% confidence** — high bar prevents flooding the Drafts folder with low-quality suggestions. Below 90, the draft is shown in the UI only, giving the user control.
 
 **FastAPI + React (Vite)** — clean separation between Python backend (where Google APIs and Anthropic SDK live) and React frontend. FastAPI's async support handles multiple Gmail API calls per triage run efficiently.
 
@@ -44,7 +44,8 @@ Email triage and meeting prep are two of the highest-friction tasks in a knowled
 ## What I'd Build Next
 
 - Async parallel Claude calls per triage run (10x latency improvement)
-- "Send" button in the UI that triggers the Gmail send API for ≥90% confidence drafts
+- "Send" button in the UI that triggers the Gmail send API for ≥85% confidence drafts
+- Add "Save to Draft" button in the UI that triggers the Gmail save draft for < 85% confidence
 - Webhook-based real-time triage via Gmail Pub/Sub
 - Persistent triage history so you can see how emails were categorized over time
 - Multi-account support with proper user sessions
