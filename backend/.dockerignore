@@ -1,0 +1,8 @@
+client_secret.json
+triagent.db
+*.db
+*.sqlite
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
