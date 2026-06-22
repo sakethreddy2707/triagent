@@ -34,3 +34,11 @@ Thumbs.db
 .vscode/settings.json
 .idea/
 *.swp
+
+.take-home-token
+node_modules/
+
+# gcloud SDK installs (in case anyone unpacks it inside the repo)
+.gcloud/
+google-cloud-sdk/
+google-cloud-cli-*.tar.gz
