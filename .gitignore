@@ -42,3 +42,5 @@ node_modules/
 .gcloud/
 google-cloud-sdk/
 google-cloud-cli-*.tar.gz
+*.tar.gz
+*.vscdb
